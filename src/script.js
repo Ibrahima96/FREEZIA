@@ -1,71 +1,70 @@
 const url = "https://api.jikan.moe/v4/top/anime?limit=24";
+let allData = [];
+let filteredData = [];
+let currentPage = 1;
+const itemsPerPage = 8;
 
 fetch(url)
   .then((response) => response.json())
   .then((data) => {
-    console.log(data); // Les données de l'API
-    getImage(data.data);
-
-    data.data.forEach((data) => {
-      fullImage(data);
-    });
+    allData = data.data;
+    filteredData = allData;
+    renderPage();
+    setupSearch();
+    setupPagination();
   });
+
+function renderPage() {
+  const index = document.querySelector("#premiun");
+  index.innerHTML = "";
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  filteredData.slice(start, end).forEach(fullImage);
+}
 
 function fullImage(data) {
   let allImages = data.images.jpg.image_url;
-  console.log(allImages);
-  let index = document.querySelector("#premiun");
   let container = document.createElement("article");
-
   container.innerHTML = `<div>
         <img class="h-auto max-w-full rounded-lg" src="${allImages}" alt="">
        </div>`;
-
-  index.appendChild(container);
+  document.querySelector("#premiun").appendChild(container);
 }
 
+function setupSearch() {
+  document.getElementById("search").addEventListener("input", function (e) {
+    const value = e.target.value.toLowerCase();
+    filteredData = allData.filter((item) =>
+      item.title.toLowerCase().includes(value)
+    );
+    currentPage = 1;
+    renderPage();
+    setupPagination();
+  });
+}
 
-function getImage(source) {
-  console.log(source);
-  let image =  source[4].images.jpg.image_url
-  console.log(image)
-   let titre =source[4].title
-   let autretitre =source[4].title_japanese
+function setupPagination() {
+  let pagination = document.getElementById("pagination");
+  if (!pagination) {
+    pagination = document.createElement("div");
+    pagination.id = "pagination";
+    pagination.className = "flex justify-center gap-2 my-4";
+    document.querySelector("#premiun").after(pagination);
+  }
+  pagination.innerHTML = "";
 
-   let description = source[4].synopsis
-
-
-  let html = document.createElement('article')
-  let containerEl = document.querySelector('#card-reference')
-  html.innerHTML = 
-  `
-     <div class="flex flex-col sm:flex-row max-w-4xl mx-auto bg-neutral shadow-sm">
-          <div class="relative w-full h-64 sm:h-auto sm:w-1/2">
-            <img
-              src="${image}"
-              alt="Vue de Venise"
-              class="absolute w-full h-full object-cover"
-            />
-          </div>
-          <div class="w-full sm:w-1/2 pt-8 pb-6 px-8">
-            <h2 class="text-2xl mb-2">${titre}</h2>
-            <p class="font-thin mb-10 sm:mb-20 truncate">
-              ${description}
-            </p>
-            <a
-              href="#"
-              class="inline-flex items-center gap-4 rounded shadow-md p-3 bg-gradient-to-r from-red-300 to-orange-300"
-            >
-              <span class="text-sm">${autretitre}</span>
-              <img 
-              src="ressources/paper-plane.svg" 
-              alt=""
-              class="w-6"
-              />
-            </a>
-          </div>
-        </div>
-     
-  `
-  containerEl.appendChild(html)
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    btn.className =
+      "px-3 py-1 rounded " +
+      (i === currentPage ? "bg-orange-700 text-white" : "bg-gray-200");
+    btn.onclick = () => {
+      currentPage = i;
+      renderPage();
+      setupPagination();
+    };
+    pagination.appendChild(btn);
+  }
 }
