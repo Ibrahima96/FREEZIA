@@ -25,8 +25,8 @@ function renderPage() {
 function fullImage(data) {
   let allImages = data.images.jpg.image_url;
   let container = document.createElement("article");
-  container.innerHTML = `<div>
-        <img class="h-auto max-w-full rounded-lg" src="${allImages}" alt="">
+  container.innerHTML = `<div class=" transition-transform hover:scale-110">
+        <img class="h-auto max-w-full rounded-lg hover:rotate-x-15 hover:-rotate-y-30" src="${allImages}" alt="">
        </div>`;
   document.querySelector("#premiun").appendChild(container);
 }
